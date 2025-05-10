@@ -1,0 +1,52 @@
+# ---- Python ----
+__pycache__/
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.env
+.venv/
+venv/
+env/
+*.sqlite3
+*.log
+*.db
+*.pot
+*.mo
+
+# Jupyter notebooks
+.ipynb_checkpoints
+
+# VS Code settings
+.vscode/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# ---- ESP32 / PlatformIO ----
+.pio/
+.build/
+libdeps/
+.idea/
+.clangd/
+.gcc-flags.json
+
+# Arduino (if using Arduino IDE)
+*.elf
+*.bin
+*.hex
+*.map
+*.d
+*.eep
+*.lss
+
+# Firmware upload artifacts
+*.uf2
+*.bin
+
+# ---- General ----
+*.swp
+*.bak
+*.tmp
+*.orig
