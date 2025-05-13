@@ -8,7 +8,6 @@ private:
     uint8_t _pin;
     DHT _dht;
     SensorData _values[2];
-    
 public:
     DTH11(uint8_t pin);
     virtual ~DTH11();

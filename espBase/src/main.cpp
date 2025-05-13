@@ -1,41 +1,23 @@
 #include<Arduino.h>
 #include <WiFi.h>
-#include "secrets.h"
+#include "Wireless.h"
+#include "DTH11.h"
 
-const char* ssid = HOME_SSID;
-const char* password = HOME_PASSWORD;
+DTH11 dth(33);
 
 void setup() {
-  Serial.begin(115200);
-  delay(1000);
-
-  Serial.println("Starting WiFi Test...");
-
-  WiFi.disconnect(true); // Reset WiFi
-  delay(100);
-
-  WiFi.mode(WIFI_STA); // Required
-  delay(100);
-
-  Serial.printf("Status BEFORE begin: %d\n", WiFi.status());
-
-  WiFi.begin(ssid, password);
-
-  unsigned long start = millis();
-  while (WiFi.status() != WL_CONNECTED && millis() - start < 10000) {
-    Serial.print(".");
-    delay(500);
-  }
-
-  Serial.println();
-  Serial.printf("Status AFTER connect: %d\n", WiFi.status());
-
-  if (WiFi.status() == WL_CONNECTED) {
-    Serial.print("IP: ");
-    Serial.println(WiFi.localIP());
-  } else {
-    Serial.println("WiFi FAILED");
-  }
+    Serial.begin(115200);
+    delay(1000);
+    Serial.println("ESP32 INITIALISED");
+    Wireless::Wifi::getInstance()->connectWifi();
+    dth.begin();
 }
 
-void loop() {}
+void loop() {
+    Wireless::Wifi::getInstance()->printWifiStatus();
+    dth.sendData();
+    time_t temp = time(0);
+    Serial.println(ctime(&temp));
+    Serial.println(dth.toString());
+    delay(600000);
+}

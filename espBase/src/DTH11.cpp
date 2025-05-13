@@ -5,6 +5,7 @@ DTH11::DTH11(uint8_t pin) : _pin(pin), _dht(pin, 11) {
     _values[0] = {"temperature",0,"C"};
     _values[1] = {"humidity",0,"%"};
     _data = _values;
+    _sensorType = "Temperature and Humidity";
 }
 
 DTH11::~DTH11() {}

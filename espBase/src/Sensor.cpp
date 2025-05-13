@@ -13,7 +13,8 @@ SensorData* Sensor::getReading(){
 }
 
 String Sensor::toJson() {
-    String json = "\"data\":{";
+    String json = "{\"sensor_type\":\"" +String(_sensorType)+"\"";
+    json+= ",\"data\":{";
     for (int i = 0; i < _count; i++) {
       json += "\"" + String(_data[i].key) + "\":{";
       json += "\"value\":" + String(_data[i].value, 1) + ",";
@@ -21,7 +22,7 @@ String Sensor::toJson() {
       json += "}";
       if (i < _count - 1) json += ",";
     }
-    json += "}";
+    json += "},\"room\":\""+_room +"\"}";
     return json;
 }
 
@@ -46,7 +47,8 @@ void Sensor::sendData(){
         _http.addHeader("Content-Type", "application/json");
 
         String payload = Sensor::toJson();
-
+        
+        Serial.println(payload);
         int httpResponseCode = _http.POST(payload);
 
         if (httpResponseCode > 0) {
@@ -62,4 +64,8 @@ void Sensor::sendData(){
     } else {
         Serial.println("WiFi not connected");
     }
+}
+
+void Sensor::setRoom(const char*room){
+    _room = room;
 }

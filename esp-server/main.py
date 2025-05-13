@@ -15,7 +15,7 @@ class Esp(Resource):
             data = request.get_json()
             print("Received from ESP32:", data)
 
-            sensor_type = self.safe_identifier(data.get("sensor_type", "unknown"))
+            sensor_type = f"{self.safe_identifier(data.get('sensor_type', 'unknown'))}:{data.get('room')}" 
             sensor_data_raw = data.get("data", {})
             sensor_data = self.flatten_data(sensor_data_raw)
 
@@ -25,6 +25,8 @@ class Esp(Resource):
                 now = datetime.now()
                 sensorDate = now.strftime("%d/%m/%Y %H:%M:%S")
                 sensor_data["date"] = sensorDate
+            
+
 
             conn = sqlite3.connect("esp.db")
             cursor = conn.cursor()

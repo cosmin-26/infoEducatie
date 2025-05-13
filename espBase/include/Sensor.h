@@ -16,6 +16,7 @@ protected:
     SensorData* _data;
     String _serverUrl = "http://192.168.0.124:5081/esp-data";
     HTTPClient _http;
+    String _sensorType="default",_room="main lab";
 
 public:
     Sensor();
@@ -27,6 +28,8 @@ public:
     virtual void sendData();
 
     void setUrl(const char* url);
+    void setRoom(const char* room);
+
 };
 
 
