@@ -1,15 +1,22 @@
 #include <Arduino.h>
+#include "Wireless.h"
+#include "ESP32Cam.h"
 
-#define PIN_FLASHLIGHT 4
+
+// Create camera server on port 80
+ESP32CamServer camServer(80);
 
 void setup() {
-  delay(2000);  // Allow time for stable boot
-  pinMode(PIN_FLASHLIGHT, OUTPUT);
+    Serial.begin(115200);
+    delay(2000);
+
+    Wireless::Wifi::getInstance()->connectWifi();
+
+    camServer.begin();
 }
 
+
+
 void loop() {
-  digitalWrite(PIN_FLASHLIGHT, LOW);  // Turn ON
-  delay(700);
-  digitalWrite(PIN_FLASHLIGHT, HIGH); // Turn OFF
-  delay(700);
+  delay(100);
 }
