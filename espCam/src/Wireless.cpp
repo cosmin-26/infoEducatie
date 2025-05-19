@@ -51,27 +51,21 @@ void Wifi::connectWifi()
         Serial.println("ERROR: SSID is null or empty!");
         return;
     }
-    Serial.println(2);
+
     Serial.printf("SSID: %s\n", _ssid ? _ssid : "NULL");
     Serial.printf("PASS: %s\n", _password ? _password : "NULL");
 
     WiFi.disconnect(true);         // Clear previous config
-    Serial.println("2.1");
+
     WiFi.mode(WIFI_STA);           // Force Station mode
-    Serial.println("2.2");
+
     delay(100);                    // Give it time
 
-    Serial.print("WiFi status before begin: ");
-    Serial.println(WiFi.status());
     WiFi.useStaticBuffers(true);
     WiFi.begin(_ssid, _password);
 
-    Serial.print("WiFi status after begin: ");
-    Serial.println(WiFi.status());
-    Serial.println(3);
     const unsigned long timeout = 25000;
     unsigned long startTime = millis();
-    Serial.println(4);
     while (WiFi.status() != WL_CONNECTED && millis() - startTime < timeout)
     {
         delay(300);
@@ -79,7 +73,7 @@ void Wifi::connectWifi()
         delay(300);
     }
 
-    Serial.println("PLM");
+
 
     if (WiFi.status() == WL_CONNECTED)
     {

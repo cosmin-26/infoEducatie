@@ -19,10 +19,27 @@
   #define HREF_GPIO_NUM     23
   #define PCLK_GPIO_NUM     22
 
+ESP32CamServer::ESP32CamServer(int port) : server(port), _port(port) {}
 
 void ESP32CamServer::begin() {
+
+    Serial.println("");
+    Serial.print("Connected to WiFi. IP address: ");
+    Serial.println(WiFi.localIP());
+
+    // Initialize camera
     setupCamera();
-    startServer();
+
+    // Define routes
+    setupRoutes();
+
+    // Start server
+    server.begin();
+    Serial.println("Server started");
+}
+
+void ESP32CamServer::handleClient() {
+    server.handleClient();
 }
 
 void ESP32CamServer::setupCamera() {
@@ -66,59 +83,41 @@ void ESP32CamServer::setupCamera() {
     }
 }
 
-void ESP32CamServer::startServer() {
-    server.on("/capture", HTTP_GET, [this](AsyncWebServerRequest *request){
-        handleCapture(request);
-    });
-
-    server.on("/stream", HTTP_GET, [this](AsyncWebServerRequest *request){
-        handleStream(request);
-    });
-
-    server.begin();
-}
-
-void ESP32CamServer::handleCapture(AsyncWebServerRequest *request) {
-    camera_fb_t * fb = esp_camera_fb_get();
-    if (!fb) {
-        request->send(500, "text/plain", "Camera capture failed");
-        return;
-    }
-
-    AsyncWebServerResponse * response = request->beginResponse(
-        "image/jpeg", fb->len, [fb](uint8_t *buffer, size_t maxLen, size_t alreadySent) -> size_t {
-            size_t toSend = fb->len - alreadySent;
-            if (toSend > maxLen) toSend = maxLen;
-            memcpy(buffer, fb->buf + alreadySent, toSend);
-            if (alreadySent + toSend == fb->len) {
-                esp_camera_fb_return(fb); // free the frame after sending
-            }
-            return toSend;
+void ESP32CamServer::setupRoutes() {
+    server.on("/capture", HTTP_GET, [this]() {
+        camera_fb_t *fb = esp_camera_fb_get();
+        if (!fb) {
+            Serial.println("Camera capture failed");
+            server.send(500, "text/plain", "Camera capture failed");
+            return;
         }
-    );
 
-    response->addHeader("Content-Disposition", "inline; filename=capture.jpg");
-    request->send(response);
-}
-
-//TODO:i need to make this better
-void ESP32CamServer::handleStream(AsyncWebServerRequest *request) {
-    /*
-    WiFiClient client = request->client();
-    String response = "HTTP/1.1 200 OK\r\n";
-    response += "Content-Type: multipart/x-mixed-replace; boundary=frame\r\n\r\n";
-    client.print(response);
-
-    while (client.connected()) {
-        camera_fb_t * fb = esp_camera_fb_get();
-        if (!fb) break;
-
-        client.printf("--frame\r\nContent-Type: image/jpeg\r\nContent-Length: %u\r\n\r\n", fb->len);
-        client.write(fb->buf, fb->len);
-        client.print("\r\n");
+        server.sendHeader("Content-Type", "image/jpeg");
+        server.sendHeader("Content-Length", String(fb->len));
+        server.send(200);
+        server.client().write(fb->buf, fb->len);
         esp_camera_fb_return(fb);
-        delay(100); // adjust frame rate
-    }
-        */
+    });
 
+    server.on("/stream", HTTP_GET, [this]() {
+        WiFiClient client = server.client();
+        String response = "HTTP/1.1 200 OK\r\n";
+        response += "Content-Type: multipart/x-mixed-replace; boundary=frame\r\n\r\n";
+        client.print(response);
+
+        while (client.connected()) {
+            camera_fb_t *fb = esp_camera_fb_get();
+            if (!fb) {
+                Serial.println("Camera capture failed");
+                continue;
+            }
+
+            client.printf("--frame\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n", fb->len);
+            client.write(fb->buf, fb->len);
+            client.print("\r\n");
+            esp_camera_fb_return(fb);
+
+            delay(50); // ~20 FPS
+        }
+    });
 }
