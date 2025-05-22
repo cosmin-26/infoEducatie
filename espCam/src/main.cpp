@@ -10,14 +10,11 @@ void setup() {
     Serial.begin(115200);
     delay(2000);
 
-    Wireless::Wifi::getInstance("Info2","parola#info")->connectWifi();
+    Wireless::Wifi::getInstance("Info2","informatica#2")->connectWifi();
     cam.begin();
-
-
 }
 
 
-
 void loop() {
-  delay(100);
+  cam.handleClient();
 }

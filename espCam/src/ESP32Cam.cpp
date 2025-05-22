@@ -24,8 +24,10 @@ ESP32CamServer::ESP32CamServer(int port) : server(port), _port(port) {}
 void ESP32CamServer::begin() {
 
     Serial.println("");
-    Serial.print("Connected to WiFi. IP address: ");
-    Serial.println(WiFi.localIP());
+    Serial.print("Connected to WiFi. IP address:http://");
+    Serial.print(WiFi.localIP());
+    Serial.print(":");
+    Serial.println(_port);
 
     // Initialize camera
     setupCamera();
@@ -84,6 +86,10 @@ void ESP32CamServer::setupCamera() {
 }
 
 void ESP32CamServer::setupRoutes() {
+    server.on("/", HTTP_GET, [this](){
+        server.send(200, "text/html", "<a href='/capture'>Capture</a><a href='/stream'>Stream</a>");
+    });
+
     server.on("/capture", HTTP_GET, [this]() {
         camera_fb_t *fb = esp_camera_fb_get();
         if (!fb) {
@@ -91,12 +97,8 @@ void ESP32CamServer::setupRoutes() {
             server.send(500, "text/plain", "Camera capture failed");
             return;
         }
+        server.send_P(200, "image/jpeg", (const char *)fb->buf, fb->len);
 
-        server.sendHeader("Content-Type", "image/jpeg");
-        server.sendHeader("Content-Length", String(fb->len));
-        server.send(200);
-        server.client().write(fb->buf, fb->len);
-        esp_camera_fb_return(fb);
     });
 
     server.on("/stream", HTTP_GET, [this]() {
